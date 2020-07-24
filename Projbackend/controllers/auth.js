@@ -75,8 +75,8 @@ exports.isSignedIn = expressJwt({
 });
 
 // custom middlewares
-exports.isAuthenticated = (res, req, next) => {
-  let checker = req.profile && req.auth && req.profile._id == req.auth._id;
+exports.isAuthenticated = (req, res, next) => {
+  const checker = req.profile && req.auth && !req.profile._id == req.auth._id;
   if (checker) {
     return res.status(403).json({
       error: "Access denied",
@@ -84,12 +84,14 @@ exports.isAuthenticated = (res, req, next) => {
   }
   next();
 };
-exports.isAdmin = (res, req, next) => {
-  if (req.profile.role === 0) {
-    return res.status(403).json;
-    {
-      error: "You are not Admin, Access denied";
-    }
+exports.isAdmin = (req, res, next) => {
+  const check = req.profile.role;
+
+  if (check === 0) {
+    console.log("enter into function....." + check);
+    return res.status(403).json({
+      error: "You are not Admin, Access denied",
+    });
   }
   next();
 };

@@ -1,6 +1,5 @@
 const User = require("../models/user");
 
-const Order = require("../models/order");
 const { use } = require("../routes/user");
 const order = require("../models/order");
 
@@ -53,4 +52,33 @@ exports.userPurchaseList = (req, res) => {
       }
       return res.json(order);
     });
+};
+
+exports.pushOrderInPurchaseList = (req, res, next) => {
+  let purchases = [];
+  req.body.order.products.array.forEach((product) => {
+    purchases.push({
+      _id: product.id,
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      quantity: product.quantity,
+      amount: req.body.order.amount,
+      transaction_id: req.body.order.transaction_id,
+    });
+  });
+  //store this in db
+  User.findOneAndUpdate(
+    { _id: req.profile._id },
+    { $push: { purchases: purchases } },
+    { new: true },
+    (err, purchase) => {
+      if (err) {
+        return res.status(400).json({
+          error: "unable to save purcahse list",
+        });
+      }
+      next();
+    }
+  );
 };
